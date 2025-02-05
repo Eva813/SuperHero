@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using WebApplication1.Data;
+
 
 namespace WebApplication1
 {
@@ -31,6 +34,19 @@ namespace WebApplication1
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplication1", Version = "v1" });
             });
+
+            // services.AddDbContext<DataContext>(
+            //     dbContextOptions => dbContextOptions
+            //         .UseMySql(Configuration["Connection:MySql:superherodb:String"], new MySqlServerVersion(Configuration["Connection:MySql:superherodb:Version"]))
+
+            //         .EnableSensitiveDataLogging() // <-- These two calls are optional but help
+            //         .EnableDetailedErrors()       // <-- with debugging (remove for production).
+
+            // );
+            services.AddDbContext<DataContext>(options =>
+                options.UseMySql(Configuration.GetConnectionString("DefaultConnection"),
+                    new MySqlServerVersion(new Version(8, 0, 23))));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

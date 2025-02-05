@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebApplication1.Data;
 
 namespace WebApplication1.Controllers
 {
@@ -19,6 +21,13 @@ namespace WebApplication1.Controllers
             new SuperHero
                 { Id = 2, Name = "Batman", FirstName = "Bruce", LastName = "Wayne", Place = "Gotham City" }
         };
+
+        private readonly DataContext _context;
+
+        public SuperHeroController(DataContext context)
+        {
+            _context = context;
+        }
         // GET: api/SuperHero   
         [HttpGet]
         public async Task<ActionResult<List<SuperHero>>> Get()
@@ -30,14 +39,14 @@ namespace WebApplication1.Controllers
             //     new SuperHero
             //         { Id = 2, Name = "Batman", FirstName = "Bruce", LastName = "Wayne", Place = "Gotham City" }
             // };
-            return Ok(superHeroes);
+            return Ok( await _context.SuperHeroes.ToListAsync());
         }
 
         // make a get method that returns a single hero by id
         [HttpGet("{id:int}")]
         public async Task<ActionResult<SuperHero>> Get(int id)
         {
-            var hero = superHeroes.FirstOrDefault(hero => hero.Id == id);
+            var hero = await _context.SuperHeroes.FindAsync(id);
             if (hero == null)
             {
                 return BadRequest("No hero found with that id");
@@ -49,8 +58,9 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<List<SuperHero>>> AddHero(SuperHero hero)
         {
-            superHeroes.Add(hero);
-            return Ok(superHeroes);
+            _context.SuperHeroes.Add(hero);
+            await _context.SaveChangesAsync();
+            return Ok(await _context.SuperHeroes.ToListAsync());
         }
 
         // make a put method that updates a hero by id
