@@ -13,15 +13,6 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class SuperHeroController : ControllerBase
     {
-        // move superHeroes to the top of the method
-        private static List<SuperHero> superHeroes = new List<SuperHero>
-        {
-            new SuperHero
-                { Id = 1, Name = "Superman", FirstName = "Clark", LastName = "Kent", Place = "Metropolis" },
-            new SuperHero
-                { Id = 2, Name = "Batman", FirstName = "Bruce", LastName = "Wayne", Place = "Gotham City" }
-        };
-
         private readonly DataContext _context;
 
         public SuperHeroController(DataContext context)
@@ -32,13 +23,6 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<List<SuperHero>>> Get()
         {
-            // var superHeroes = new List<SuperHero>
-            // {
-            //     new SuperHero
-            //         { Id = 1, Name = "Superman", FirstName = "Clark", LastName = "Kent", Place = "Metropolis" },
-            //     new SuperHero
-            //         { Id = 2, Name = "Batman", FirstName = "Bruce", LastName = "Wayne", Place = "Gotham City" }
-            // };
             return Ok( await _context.SuperHeroes.ToListAsync());
         }
 
@@ -67,29 +51,55 @@ namespace WebApplication1.Controllers
         [HttpPut]
         public async Task<ActionResult<List<SuperHero>>> UpdateHero(SuperHero hero)
         {
-            var heroToUpdate = superHeroes.FirstOrDefault(h => h.Id == hero.Id);
+            // use EF to update the hero
+            // get the hero from the list
+            var heroToUpdate = await _context.SuperHeroes.FindAsync(hero.Id);
             if (heroToUpdate == null)
             {
                 return BadRequest("No hero found with that id");
             }
+            // update the hero
             heroToUpdate.Name = hero.Name;
             heroToUpdate.FirstName = hero.FirstName;
             heroToUpdate.LastName = hero.LastName;
             heroToUpdate.Place = hero.Place;
-            return Ok(superHeroes);
+            // save the changes
+            await _context.SaveChangesAsync();
+            return Ok(await _context.SuperHeroes.ToListAsync());
+
+            // var heroToUpdate = superHeroes.FirstOrDefault(h => h.Id == hero.Id);
+            // if (heroToUpdate == null)
+            // {
+            //     return BadRequest("No hero found with that id");
+            // }
+            // heroToUpdate.Name = hero.Name;
+            // heroToUpdate.FirstName = hero.FirstName;
+            // heroToUpdate.LastName = hero.LastName;
+            // heroToUpdate.Place = hero.Place;
+            // return Ok(superHeroes);
         }
 
         // make a delete method that deletes a hero by id   
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<List<SuperHero>>> DeleteHero(int id)
         {
-            var heroToDelete = superHeroes.FirstOrDefault(h => h.Id == id);
+            // use EF to delete the hero
+            var heroToDelete = await _context.SuperHeroes.FindAsync(id);
             if (heroToDelete == null)
             {
                 return BadRequest("No hero found with that id");
             }
-            superHeroes.Remove(heroToDelete);
-            return Ok(superHeroes);
+            _context.SuperHeroes.Remove(heroToDelete);
+            await _context.SaveChangesAsync();
+            return Ok(await _context.SuperHeroes.ToListAsync());
+
+            // var heroToDelete = superHeroes.FirstOrDefault(h => h.Id == id);
+            // if (heroToDelete == null)
+            // {
+            //     return BadRequest("No hero found with that id");
+            // }
+            // superHeroes.Remove(heroToDelete);
+            // return Ok(superHeroes);
         }
     }
 }
